@@ -26,6 +26,7 @@ services:
       SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in .env}
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
       DEV_MODE: "0"
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
       STATIC_DIST: /app/frontend/dist
       LLM_API_KEY: ${LLM_API_KEY:-}
       LLM_BASE_URL: ${LLM_BASE_URL:-https://api.openai.com/v1}

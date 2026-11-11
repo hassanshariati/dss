@@ -43,6 +43,11 @@ MAX_SHEETS = 12
 @app.on_event("startup")
 def initialize():
     Base.metadata.create_all(engine)
+    if os.getenv("SEED_DEMO_DATA", "false").lower() == "true":
+        # Deterministic, clearly labelled examples: never touch real uploads.
+        from .seed_demo import seed_demo
+        with SessionLocal() as db:
+            seed_demo(db)
 
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
@@ -223,7 +228,7 @@ async def update_branding(
 
 @app.get(PREFIX + "/users")
 def users(db: Session = Depends(get_db), admin: User = Depends(role_access("admin"))):
-    return [public_user(u) for u in db.scalars(select(User).order_by(User.id.desc())).all()]
+    return [public_user(u) for u in db.scalars(select(User).where(User.role != "system").order_by(User.id.desc())).all()]
 
 @app.post(PREFIX + "/users")
 def create_user(payload: UserCreate, db: Session = Depends(get_db), admin: User = Depends(role_access("admin"))):

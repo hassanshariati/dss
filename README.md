@@ -86,3 +86,11 @@ Run tests:
 ## Demonstration datasets
 
 Upload the clearly synthetic examples in samples/demo_performance.csv and samples/demo_projects.csv through the employee portal. All names, metrics and projects in these files are fictional and **not actual performance evaluations**. Use the management explorer to choose a group, an aggregation, and one of the automatically suggested charts.
+
+## Populated demonstration data
+
+For initial evaluation, docker-compose.yml enables \`SEED_DEMO_DATA=true\`. At API startup the idempotent \`backend/app/seed_demo.py\` generates **five explicitly marked DEMO datasets** with more than 1,000 synthetic records: management KPIs (8 managers over 9 months), employees and activities (64 staff), project portfolio/milestones (24 projects), finance and budgets, and service-quality requests. Identifiers and figures are fake and never represent actual people. These datasets are owned by a disabled system account and appear only in manager/admin organization-wide views. Repeated restarts do not duplicate them or alter employees' uploads.
+
+Run manually after database initialization: \`docker compose exec -T api python -m app.seed_demo\`
+
+Disable automatic sample seeding with \`SEED_DEMO_DATA=false\` in /opt/dss/.env. Existing samples are not deleted automatically. For production assessments, keep samples visually separated and establish reviewed KPI definitions before relying on any decisions.
