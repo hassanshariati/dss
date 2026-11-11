@@ -1,11 +1,11 @@
-FROM node:22-alpine AS ui
+FROM public.ecr.aws/docker/library/node:22-alpine AS ui
 WORKDIR /build/frontend
 COPY frontend/package.json ./
 RUN npm install --no-audit --no-fund
 COPY frontend/ ./
 RUN npm run build
 
-FROM python:3.12-slim AS service
+FROM public.ecr.aws/docker/library/python:3.12-slim AS service
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 STATIC_DIST=/app/frontend/dist
 RUN apt-get update && apt-get install -y --no-install-recommends fonts-dejavu-core ca-certificates \
     && rm -rf /var/lib/apt/lists/*
