@@ -42,4 +42,9 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - name: Validate Compose configuration
+        env:
+          POSTGRES_PASSWORD: ci-random-placeholder
+          SESSION_SECRET: ci-placeholder-1234567890abcdefghijklmnopqrstuvwxyz
+        run: docker compose config -q
       - run: docker build -t dss:ci .
