@@ -1,4 +1,4 @@
-from app.logic import aggregate, profile, numeric, suggestions
+from app.logic import aggregate, profile, numeric, suggestions, recommend_charts
 
 def test_persian_numeric():
     assert numeric("۱۲۳٫۵") == 123.5
@@ -15,3 +15,9 @@ def test_profile_and_notes():
     stats = profile(rows, ["team","score"])
     assert stats[1]["missing"] == 1
     assert suggestions(rows, ["team","score"])
+
+def test_recommended_charts():
+    stats = profile([{"Team":"A", "Score": 12},{"Team":"B", "Score": 28}], ["Team", "Score"])
+    recs = recommend_charts(stats)
+    assert recs
+    assert any(r["operation"] == "avg" and r["metric"] == "Score" for r in recs)

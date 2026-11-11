@@ -82,3 +82,7 @@ Run tests:
 - Employee access is limited to own datasets; manager/admin can access all. Single-organization authorization only.
 - No public registration or default passwords.
 - For production HR/employee-performance data, add a reviewed KPI policy, audit logs, distributed rate limits, MFA/SSO, encryption/data-retention controls, backups, schema migrations and a human approval process. Do not allow AI-only employment decisions.
+
+## Demonstration datasets
+
+Upload the clearly synthetic examples in samples/demo_performance.csv and samples/demo_projects.csv through the employee portal. All names, metrics and projects in these files are fictional and **not actual performance evaluations**. Use the management explorer to choose a group, an aggregation, and one of the automatically suggested charts.
