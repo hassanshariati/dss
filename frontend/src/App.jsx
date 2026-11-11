@@ -191,6 +191,10 @@ function Overview({area,user,datasets,dashboard,onExplore,onChange}) {
       </section>
       <section className="panel insight-panel"><div className="insight-glow"/><div className="panel-eyebrow">SMART INSIGHTS</div><div className="insight-symbol"><Sparkles size={25}/></div><h3>از داده تا تصمیم،<br/>تنها چند کلیک.</h3><p>با انتخاب هر فایل، شاخص‌های عددی، کیفیت داده، مقایسه گروه‌ها و نمودارهای قابل تنظیم را مشاهده کنید.</p><button className="outline-light-btn" onClick={()=>onChange('explore')}>شروع تحلیل <ArrowLeft size={16}/></button><div className="insight-decoration"><span/><span/><span/><span/><span/><span/><span/></div></section>
     </div>
+    {manager && <div className="dashboard-charts">
+      <section className="panel"><div className="panel-head"><div><span className="panel-eyebrow">UPLOAD TRENDS</span><h3>روند دریافت داده‌های سازمان</h3></div><Activity size={19} color="#43d6b5"/></div><Plot data={dashboard?.activity_by_month} type="area" unit="تعداد فایل"/></section>
+      <section className="panel"><div className="panel-head"><div><span className="panel-eyebrow">TEAM ACTIVITY</span><h3>مشارکت واحدهای بارگذار</h3></div><BarChart3 size={19} color="#43d6b5"/></div><Plot data={dashboard?.activity_by_owner} type="bar" unit="تعداد فایل"/></section>
+    </div>}
     <div className="quick-actions"><div><strong>دسترسی سریع</strong><span>فرایند بعدی خود را انتخاب کنید</span></div><div className="quick-buttons">{!manager && <button onClick={()=>onChange('upload')}><UploadCloud size={19}/> فایل جدید</button>}<button onClick={()=>onChange('explore')}><BarChart3 size={19}/> ساخت نمودار</button><button onClick={()=>onChange('files')}><Table2 size={19}/> مرور داده‌ها</button></div></div>
   </>;
 }

@@ -398,12 +398,17 @@ def chart_data(dataset_id: int, sheet_id: int, group: str, metric: str = "",
 
 @app.get(PREFIX + "/dashboard")
 def dashboard(user: User = Depends(role_access("manager", "admin")), db: Session = Depends(get_db)):
-    recent = db.scalars(select(Dataset).order_by(Dataset.id.desc()).limit(8)).all()
+    from collections import Counter
+    latest = db.scalars(select(Dataset).order_by(Dataset.id.desc()).limit(500)).all()
+    months = Counter(d.created_at.strftime("%Y-%m") for d in latest)
+    owners = Counter(d.owner.name for d in latest)
     return {
         "datasets": db.scalar(select(func.count(Dataset.id))) or 0,
         "records": db.scalar(select(func.sum(Dataset.row_count))) or 0,
         "employees": db.scalar(select(func.count(User.id)).where(User.role == "employee")) or 0,
-        "recent": [dataset_view(d, True) for d in recent],
+        "recent": [dataset_view(d, True) for d in latest[:8]],
+        "activity_by_month": [{"name": month, "value": months[month]} for month in sorted(months)[-8:]],
+        "activity_by_owner": [{"name": name, "value": count} for name, count in owners.most_common(8)],
     }
 
 DIST = Path(os.getenv("STATIC_DIST", "/app/frontend/dist"))
