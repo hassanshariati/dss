@@ -1,0 +1,8 @@
+# Insert INSIDE existing armember.ir site block.
+# Preserve /dss prefix; do NOT use handle_path.
+@dss {
+    path /dss /dss/*
+}
+handle @dss {
+    reverse_proxy 127.0.0.1:18110
+}

@@ -1,0 +1,50 @@
+name: dss
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dss
+      POSTGRES_USER: dss
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    volumes:
+      - dss_pgdata:/var/lib/postgresql/data
+    networks: [database]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dss -d dss"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    security_opt: ["no-new-privileges:true"]
+
+  api:
+    build: .
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://dss:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/dss
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in .env}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      DEV_MODE: "0"
+      STATIC_DIST: /app/frontend/dist
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.openai.com/v1}
+      LLM_MODEL: ${LLM_MODEL:-gpt-4.1-mini}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: ["127.0.0.1:${APP_BIND_PORT:-18110}:8000"]
+    networks: [database]
+    read_only: true
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=64m"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 256
+    init: true
+
+volumes:
+  dss_pgdata:
+
+networks:
+  database:
+    internal: true
