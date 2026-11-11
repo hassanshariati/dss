@@ -45,7 +45,7 @@ jobs:
           git merge --ff-only "$SHA"
           docker compose up -d --build --remove-orphans
           for i in $(seq 1 25); do
-            if curl -fsS http://127.0.0.1:18110/dss/api/health; then exit 0; fi
+            if curl -fsS http://127.0.0.1:18110/api/health; then exit 0; fi
             sleep 3
           done
           exit 1

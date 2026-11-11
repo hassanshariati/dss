@@ -35,7 +35,11 @@ services:
       db:
         condition: service_healthy
     ports: ["127.0.0.1:${APP_BIND_PORT:-18110}:8000"]
-    networks: [database, egress]
+    networks:
+      database:
+      egress:
+      gateway:
+        aliases: [dss-api]
     read_only: true
     tmpfs: ["/tmp:rw,noexec,nosuid,size=64m"]
     cap_drop: [ALL]
@@ -50,3 +54,6 @@ networks:
   database:
     internal: true
   egress: {}
+  gateway:
+    external: true
+    name: deploy_default

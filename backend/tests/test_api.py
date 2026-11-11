@@ -32,9 +32,9 @@ def client():
 
 def sign_in(client, email):
     with patch("app.main.secrets.choice", return_value="A"):
-        captcha = client.post("/dss/api/auth/captcha").json()
+        captcha = client.post("/api/auth/captcha").json()
     assert captcha["image"].startswith("data:image/png;base64,")
-    response = client.post("/dss/api/auth/login", json={
+    response = client.post("/api/auth/login", json={
         "email": email,
         "password": "example-only-strong-password-123",
         "captcha_id": captcha["id"],
@@ -44,10 +44,10 @@ def sign_in(client, email):
     return {"X-CSRF-Token": response.json()["csrf"]}
 
 def test_employee_upload_and_analysis(client):
-    assert client.get("/dss/api/health").json()["status"] == "ok"
-    assert client.post("/dss/api/datasets", files={"file": ("no.csv", b"team,score\nA,2\n")}).status_code == 401
+    assert client.get("/api/health").json()["status"] == "ok"
+    assert client.post("/api/datasets", files={"file": ("no.csv", b"team,score\nA,2\n")}).status_code == 401
     headers = sign_in(client, "analyst@example.org")
-    assert client.post("/dss/api/datasets", files={"file": ("test.csv", b"team,score\nA,2\n")}).status_code == 403
+    assert client.post("/api/datasets", files={"file": ("test.csv", b"team,score\nA,2\n")}).status_code == 403
     book = Workbook()
     sheet = book.active
     sheet.title = "Performance"
@@ -57,46 +57,46 @@ def test_employee_upload_and_analysis(client):
     sheet.append(["B", 30])
     buffer = io.BytesIO()
     book.save(buffer)
-    r = client.post("/dss/api/datasets", files={"file": ("teams.xlsx", buffer.getvalue())}, headers=headers)
+    r = client.post("/api/datasets", files={"file": ("teams.xlsx", buffer.getvalue())}, headers=headers)
     assert r.status_code == 200, r.text
     did = r.json()["id"]
-    detail = client.get(f"/dss/api/datasets/{did}").json()
+    detail = client.get(f"/api/datasets/{did}").json()
     assert detail["row_count"] == 3
     sid = detail["sheets"][0]["id"]
-    chart = client.get(f"/dss/api/datasets/{did}/chart", params={
+    chart = client.get(f"/api/datasets/{did}/chart", params={
         "sheet_id": sid, "group": "Team", "metric": "Score", "operation": "avg"})
     assert chart.status_code == 200
     assert chart.json()["data"][0] == {"name": "B", "value": 30.0}
-    analysis = client.get(f"/dss/api/datasets/{did}/analysis", params={"sheet_id": sid})
+    analysis = client.get(f"/api/datasets/{did}/analysis", params={"sheet_id": sid})
     assert analysis.status_code == 200
     assert analysis.json()["columns"][1]["avg"] == 20
-    assert client.get("/dss/api/dashboard").status_code == 403
-    assert client.get("/dss/api/users").status_code == 403
+    assert client.get("/api/dashboard").status_code == 403
+    assert client.get("/api/users").status_code == 403
 
 def test_manager_dashboard_and_captcha_one_use(client):
     headers = sign_in(client, "manager@example.org")
-    dashboard = client.get("/dss/api/dashboard")
+    dashboard = client.get("/api/dashboard")
     assert dashboard.status_code == 200
     assert dashboard.json()["employees"] == 1
-    assert client.post("/dss/api/auth/logout", headers=headers).status_code == 200
-    assert client.get("/dss/api/dashboard").status_code == 401
+    assert client.post("/api/auth/logout", headers=headers).status_code == 200
+    assert client.get("/api/dashboard").status_code == 401
 
 def test_admin_can_change_login_brand_and_create_user(client):
     headers = sign_in(client, "admin@example.org")
     from PIL import Image
     img = io.BytesIO()
     Image.new("RGB", (60, 60), color=(36, 209, 175)).save(img, format="PNG")
-    updated = client.put("/dss/api/settings/branding/employee",
+    updated = client.put("/api/settings/branding/employee",
         data={"company_name": "شرکت نمونه آزمایشی"},
         files={"logo": ("brand.png", img.getvalue(), "image/png")},
         headers=headers)
     assert updated.status_code == 200, updated.text
     assert updated.json()["logo"].startswith("data:image/png;base64,")
-    assert client.get("/dss/api/branding/employee").json()["company_name"] == "شرکت نمونه آزمایشی"
-    created = client.post("/dss/api/users", headers=headers, json={
+    assert client.get("/api/branding/employee").json()["company_name"] == "شرکت نمونه آزمایشی"
+    created = client.post("/api/users", headers=headers, json={
         "name": "کارمند تست",
         "email": "newemployee@example.org",
         "role": "employee",
         "password": "example-only-strong-password-234"})
     assert created.status_code == 200, created.text
-    assert len(client.get("/dss/api/users").json()) == 4
+    assert len(client.get("/api/users").json()) == 4

@@ -94,3 +94,7 @@ For initial evaluation, docker-compose.yml enables \`SEED_DEMO_DATA=true\`. At A
 Run manually after database initialization: \`docker compose exec -T api python -m app.seed_demo\`
 
 Disable automatic sample seeding with \`SEED_DEMO_DATA=false\` in /opt/dss/.env. Existing samples are not deleted automatically. For production assessments, keep samples visually separated and establish reviewed KPI definitions before relying on any decisions.
+
+## Dedicated subdomain
+
+The active target is https://dss.armember.ir with employee and management portals at `/employee` and `/management`. API endpoint is `/api`. The earlier `armember.ir/dss` location is obsolete. The current Caddy gateway can route the subdomain separately without modifying the existing applications.
