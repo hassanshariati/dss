@@ -25,6 +25,8 @@ def client():
                         role="employee", password_hash=password_hasher.hash("example-only-strong-password-123")))
             db.add(User(email="manager@example.org", name="Example Manager",
                         role="manager", password_hash=password_hasher.hash("example-only-strong-password-123")))
+            db.add(User(email="admin@example.org", name="Demo Admin",
+                        role="admin", password_hash=password_hasher.hash("example-only-strong-password-123")))
             db.commit()
         yield app_client
 
@@ -78,3 +80,23 @@ def test_manager_dashboard_and_captcha_one_use(client):
     assert dashboard.json()["employees"] == 1
     assert client.post("/dss/api/auth/logout", headers=headers).status_code == 200
     assert client.get("/dss/api/dashboard").status_code == 401
+
+def test_admin_can_change_login_brand_and_create_user(client):
+    headers = sign_in(client, "admin@example.org")
+    from PIL import Image
+    img = io.BytesIO()
+    Image.new("RGB", (60, 60), color=(36, 209, 175)).save(img, format="PNG")
+    updated = client.put("/dss/api/settings/branding/employee",
+        data={"company_name": "شرکت نمونه آزمایشی"},
+        files={"logo": ("brand.png", img.getvalue(), "image/png")},
+        headers=headers)
+    assert updated.status_code == 200, updated.text
+    assert updated.json()["logo"].startswith("data:image/png;base64,")
+    assert client.get("/dss/api/branding/employee").json()["company_name"] == "شرکت نمونه آزمایشی"
+    created = client.post("/dss/api/users", headers=headers, json={
+        "name": "کارمند تست",
+        "email": "newemployee@example.org",
+        "role": "employee",
+        "password": "example-only-strong-password-234"})
+    assert created.status_code == 200, created.text
+    assert len(client.get("/dss/api/users").json()) == 4
