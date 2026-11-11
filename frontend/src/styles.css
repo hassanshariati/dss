@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap');
-:root{font-family:Vazirmatn,system-ui,Tahoma,sans-serif;color:#edf3ff;background:#0a1020;font-synthesis:none;line-height:1.7;font-size:14px}
+:root{font-family:'Vazirmatn Variable',Vazirmatn,system-ui,Tahoma,sans-serif;color:#edf3ff;background:#0a1020;font-synthesis:none;line-height:1.7;font-size:14px}
 *{box-sizing:border-box}
 body{margin:0;min-width:320px}
 button,input,select{font:inherit}
