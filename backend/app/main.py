@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from .logic import aggregate, profile, safe_value, suggestions, recommend_charts
 from .models import Base, Branding, Captcha, DataRow, DataSheet, Dataset, SessionToken, User
 
-PREFIX = "/dss/api"
+PREFIX = "/api"
 SECRET = os.getenv("SESSION_SECRET", "")
 if len(SECRET) < 32 and os.getenv("DEV_MODE") != "1":
     raise RuntimeError("SESSION_SECRET must be at least 32 characters")
@@ -174,7 +174,7 @@ def login(payload: LoginRequest, response: Response, db: Session = Depends(get_d
     db.commit()
     response.set_cookie("dss_session", raw, httponly=True,
                         secure=os.getenv("COOKIE_SECURE", "true").lower() == "true",
-                        samesite="lax", max_age=28800, path="/dss")
+                        samesite="lax", max_age=28800, path="/")
     return {"user": public_user(user), "csrf": csrf}
 
 @app.get(PREFIX + "/auth/me")
@@ -185,7 +185,7 @@ def whoami(request: Request, user: User = Depends(auth_user)):
 def logout(request: Request, response: Response, db: Session = Depends(get_db), user: User = Depends(authenticated_write)):
     db.delete(request.state.session)
     db.commit()
-    response.delete_cookie("dss_session", path="/dss")
+    response.delete_cookie("dss_session", path="/")
     return {"ok": True}
 
 @app.get(PREFIX + "/branding/{portal}")
@@ -418,12 +418,12 @@ def dashboard(user: User = Depends(role_access("manager", "admin")), db: Session
 
 DIST = Path(os.getenv("STATIC_DIST", "/app/frontend/dist"))
 if (DIST / "assets").exists():
-    app.mount("/dss/assets", StaticFiles(directory=DIST / "assets"), name="assets")
+    app.mount("/assets", StaticFiles(directory=DIST / "assets"), name="assets")
 
-@app.get("/dss")
-@app.get("/dss/")
-@app.get("/dss/{route:path}")
+@app.get("/")
+@app.get("/{route:path}")
 def spa(route: str = ""):
+    if route.startswith("api/"): raise HTTPException(404, "Not found")
     index = DIST / "index.html"
     if not index.is_file(): raise HTTPException(503, "Frontend build is not installed")
     return FileResponse(index)
