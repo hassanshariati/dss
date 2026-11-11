@@ -10,7 +10,7 @@ export async function api(path, options = {}) {
   if (!['GET', 'HEAD'].includes(method.toUpperCase()) && csrf) {
     headers['X-CSRF-Token'] = csrf;
   }
-  const response = await fetch('/dss/api' + path, { ...options, method, credentials: 'same-origin', headers });
+  const response = await fetch('/api' + path, { ...options, method, credentials: 'same-origin', headers });
   let payload = null;
   try { payload = await response.json(); } catch {}
   if (!response.ok) {
