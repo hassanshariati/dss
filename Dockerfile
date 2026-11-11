@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends fonts-dejavu-co
 RUN groupadd --system dss && useradd --system --gid dss --home-dir /app dss
 WORKDIR /app/backend
 COPY backend/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --index-url https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 COPY backend/app/ ./app/
 COPY --from=ui /build/frontend/dist/ /app/frontend/dist/
 RUN chown -R dss:dss /app
