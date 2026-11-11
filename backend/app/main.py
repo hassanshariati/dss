@@ -22,7 +22,7 @@ from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import create_engine, delete, func, select
 from sqlalchemy.orm import Session, sessionmaker
 
-from .logic import aggregate, profile, safe_value, suggestions
+from .logic import aggregate, profile, safe_value, suggestions, recommend_charts
 from .models import Base, Branding, Captcha, DataRow, DataSheet, Dataset, SessionToken, User
 
 PREFIX = "/dss/api"
@@ -365,7 +365,7 @@ async def analyze(dataset_id: int, sheet_id: int, ai: bool = False,
     rows = sheet_rows(db, sheet.id)
     stats = profile(rows, sheet.columns)
     notes = suggestions(rows, sheet.columns)
-    result = {"mode": "statistics", "columns": stats, "notes": notes, "rows": len(rows), "ai_text": None}
+    result = {"mode": "statistics", "columns": stats, "notes": notes, "rows": len(rows), "ai_text": None, "recommendations": recommend_charts(stats)}
     api_key = os.getenv("LLM_API_KEY", "")
     if ai and api_key and user.role in ("manager", "admin"):
         # Send only numeric aggregates and field labels. No raw rows or person-level records.

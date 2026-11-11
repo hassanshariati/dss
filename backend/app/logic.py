@@ -81,3 +81,20 @@ def suggestions(rows, columns):
             top = col["top"][0]
             notes.append(f'بیشترین فراوانی در «{col["name"]}» مربوط به «{top["name"]}» با {top["count"]} رکورد است.')
     return notes[:10] or ["برای تحلیل دقیق‌تر، ستون‌های سنجه و دوره زمانی را مشخص کنید."]
+
+def recommend_charts(columns_profile):
+    """Recommend meaningful visualizations from validated column profiles."""
+    categories = [c for c in columns_profile if c["kind"] == "categorical" and 1 < c["unique"] <= 48]
+    metrics = [c for c in columns_profile if c["kind"] == "numeric"]
+    categories.sort(key=lambda c: (not bool(re.search(r"date|period|month|year|تاریخ|ماه|سال|دوره|زمان", c["name"], re.I)), c["unique"]))
+    out = []
+    for cat in categories[:3]:
+        temporal = bool(re.search(r"date|period|month|year|تاریخ|ماه|سال|دوره|زمان", cat["name"], re.I))
+        out.append({"group": cat["name"], "metric": "", "operation": "count",
+                    "type": "line" if temporal else "bar",
+                    "title": "تعداد رکوردها بر اساس " + cat["name"]})
+        for met in metrics[:2]:
+            out.append({"group": cat["name"], "metric": met["name"], "operation": "avg",
+                        "type": "area" if temporal else "bar",
+                        "title": "میانگین " + met["name"] + " / " + cat["name"]})
+    return out[:7]
