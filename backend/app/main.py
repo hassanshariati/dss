@@ -354,7 +354,7 @@ def dataset_detail(dataset_id: int, user: User = Depends(auth_user), db: Session
     sheets = db.scalars(select(DataSheet).where(DataSheet.dataset_id == item.id).order_by(DataSheet.id)).all()
     return {**dataset_view(item, True), "sheets": [
         {"id": s.id, "name": s.name, "columns": s.columns, "row_count": s.row_count,
-         "preview": sheet_rows(db, s.id)[:10]} for s in sheets
+         "preview": [r.data for r in db.scalars(select(DataRow).where(DataRow.sheet_id == s.id).order_by(DataRow.sequence).limit(10)).all()]} for s in sheets
     ]}
 
 @app.get(PREFIX + "/datasets/{dataset_id}/analysis")
